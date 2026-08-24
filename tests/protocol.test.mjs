@@ -79,7 +79,7 @@ test('modern server discovery advertises the modern protocol and server instruct
   assert.equal(response.result.cacheScope, 'private');
   assert.deepEqual(response.result._meta['io.modelcontextprotocol/serverInfo'], {
     name: 'graph-reasoning',
-    version: '0.2.0',
+    version: '0.2.1',
   });
   assert.equal(response.result.serverInfo, undefined);
   assert.match(response.result.instructions, /concise/i);
@@ -109,7 +109,7 @@ test('tools/list uses modern complete response shape after discovery', async () 
   assert.equal(response.result.cacheScope, 'private');
   assert.deepEqual(response.result._meta['io.modelcontextprotocol/serverInfo'], {
     name: 'graph-reasoning',
-    version: '0.2.0',
+    version: '0.2.1',
   });
   assert.deepEqual(response.result.tools.map((tool) => tool.name), TOOL_NAMES);
 });
@@ -136,7 +136,7 @@ test('tools/call dispatches structured arguments and returns text plus structure
   assert.equal(response.result.resultType, 'complete');
   assert.deepEqual(response.result._meta['io.modelcontextprotocol/serverInfo'], {
     name: 'graph-reasoning',
-    version: '0.2.0',
+    version: '0.2.1',
   });
   assert.equal(response.result.isError, false);
   assert.deepEqual(response.result.structuredContent, {

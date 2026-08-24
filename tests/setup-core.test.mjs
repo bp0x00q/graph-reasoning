@@ -141,3 +141,72 @@ test('configureNeo4jText preserves CRLF files for Windows installations', () => 
   assert.match(output, /server\.http\.enabled=true\r\n/);
   assert.equal(output.replace(/\r\n/g, '').includes('\n'), false);
 });
+
+
+test('installGraphReasoning accepts the documented mcp_servers wrapper without rewriting its shape', async () => {
+  const temp = await mkdtemp(join(tmpdir(), 'graph-reasoning-snake-mcp-'));
+  const source = join(temp, 'source');
+  const home = join(temp, 'home');
+  const installRoot = join(home, '.codex', 'plugins');
+
+  await mkdir(join(source, '.codex-plugin'), { recursive: true });
+  await writeFile(join(source, '.codex-plugin', 'plugin.json'), '{"name":"graph-reasoning"}\n');
+  await writeFile(join(source, '.mcp.json'), JSON.stringify({
+    mcp_servers: {
+      'graph-reasoning': {
+        command: 'node',
+        args: ['./server/index.mjs'],
+        cwd: '.',
+        env: {},
+      },
+    },
+  }, null, 2));
+  await mkdir(join(source, 'server'), { recursive: true });
+  await writeFile(join(source, 'server', 'index.mjs'), '');
+
+  const result = await installGraphReasoning({
+    sourceRoot: source,
+    homeDir: home,
+    installRoot,
+    neo4jHttpUrl: 'http://127.0.0.1:7575',
+    neo4jDatabase: 'reasoning',
+    skipMarketplace: true,
+  });
+
+  const installedMcp = JSON.parse(await readFile(result.mcpPath, 'utf8'));
+  assert.equal(installedMcp.mcp_servers['graph-reasoning'].env.NEO4J_HTTP_URL, 'http://127.0.0.1:7575');
+  assert.equal(installedMcp.mcp_servers['graph-reasoning'].env.NEO4J_DATABASE, 'reasoning');
+  assert.equal(Object.hasOwn(installedMcp, 'mcpServers'), false);
+});
+
+test('installGraphReasoning accepts a legacy camelCase mcpServers wrapper', async () => {
+  const temp = await mkdtemp(join(tmpdir(), 'graph-reasoning-camel-mcp-'));
+  const source = join(temp, 'source');
+  const home = join(temp, 'home');
+  const installRoot = join(home, '.codex', 'plugins');
+
+  await mkdir(join(source, '.codex-plugin'), { recursive: true });
+  await writeFile(join(source, '.codex-plugin', 'plugin.json'), '{"name":"graph-reasoning"}\n');
+  await writeFile(join(source, '.mcp.json'), JSON.stringify({
+    mcpServers: {
+      'graph-reasoning': {
+        command: 'node',
+        args: ['./server/index.mjs'],
+        cwd: '.',
+        env: {},
+      },
+    },
+  }, null, 2));
+  await mkdir(join(source, 'server'), { recursive: true });
+  await writeFile(join(source, 'server', 'index.mjs'), '');
+
+  const result = await installGraphReasoning({
+    sourceRoot: source,
+    homeDir: home,
+    installRoot,
+    skipMarketplace: true,
+  });
+
+  const installedMcp = JSON.parse(await readFile(result.mcpPath, 'utf8'));
+  assert.equal(installedMcp.mcpServers['graph-reasoning'].command, 'node');
+});

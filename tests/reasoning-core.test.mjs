@@ -148,6 +148,36 @@ test('active context projects branch-local nodes from the active branch and its 
   assert.equal(result.branch_nodes.length, 1);
 });
 
+
+
+test('branch inspection aggregates nodes before returning the branch map', async () => {
+  const client = new RecordingClient({
+    runHandler(statement) {
+      assert.match(statement, /WITH b, collect\([\s\S]*?\) AS nodes\s+RETURN \{/);
+      assert.match(statement, /nodes: nodes/);
+      return {
+        columns: ['branch'],
+        rows: [[{
+          id: 'BR-1',
+          label: 'Parser',
+          hypothesis: 'Parser rejects input',
+          status: 'exploring',
+          nodes: [{ id: 'HYP-1', kind: 'hypothesis', content: 'Parser rejects input', status: 'unsupported' }],
+        }]],
+      };
+    },
+  });
+
+  const result = await serviceWithClient(client).inspect({
+    run_id: 'RUN-1',
+    view: 'branch',
+    branch_id: 'BR-1',
+  });
+
+  assert.equal(result.branch.id, 'BR-1');
+  assert.equal(result.branch.nodes[0].id, 'HYP-1');
+});
+
 test('advance creates a new state, typed nodes, dependency links, and refutation invalidation', async () => {
   const client = new RecordingClient({
     runHandler(statement) {

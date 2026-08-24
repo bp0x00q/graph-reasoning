@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 export const MCP_PROTOCOL_LEGACY = '2025-11-25';
 export const MCP_PROTOCOL_MODERN = '2026-07-28';
 export const SERVER_NAME = 'graph-reasoning';
-export const SERVER_VERSION = '0.2.0';
+export const SERVER_VERSION = '0.2.1';
 const SERVER_INFO_META_KEY = 'io.modelcontextprotocol/serverInfo';
 
 
@@ -868,6 +868,7 @@ RETURN collect({id: b.id, branchpoint_id: bp.id, label: b.label, hypothesis: b.h
     const result = await this.client.run(`/* inspect:view:branch */
 MATCH (b:Branch {id: $branchId, runId: $runId})
 OPTIONAL MATCH (b)-[:CONTAINS]->(n:ReasoningNode)
+WITH b, collect(CASE WHEN n IS NULL THEN null ELSE {id: n.id, kind: n.kind, content: n.content, status: n.status, created_at: n.createdAt} END) AS nodes
 RETURN {
   id: b.id,
   label: b.label,
@@ -875,7 +876,7 @@ RETURN {
   status: b.status,
   parent_branch_id: b.parentBranchId,
   branchpoint_id: b.branchPointId,
-  nodes: collect(CASE WHEN n IS NULL THEN null ELSE {id: n.id, kind: n.kind, content: n.content, status: n.status, created_at: n.createdAt} END)
+  nodes: nodes
 } AS branch`, { runId, branchId });
     const branch = firstCell(result);
     if (!branch) throw new GraphReasoningError(`Branch not found: ${branchId}`, { code: 'BRANCH_NOT_FOUND' });

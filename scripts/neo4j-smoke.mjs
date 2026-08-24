@@ -9,7 +9,6 @@ import {
 const client = new Neo4jHttpClient();
 const service = new ReasoningGraphService({ client });
 let runId;
-let succeeded = false;
 
 try {
   const started = await service.start({
@@ -44,6 +43,17 @@ try {
 
   const firstBranch = branched.created_branches[0];
   const secondBranch = branched.created_branches[1];
+
+  const inspectedFirstBranch = await service.inspect({
+    run_id: runId,
+    view: 'branch',
+    branch_id: firstBranch.id,
+  });
+  assert.equal(inspectedFirstBranch.branch.id, firstBranch.id);
+  assert.ok(
+    inspectedFirstBranch.branch.nodes.some((node) => node.id === firstBranch.primary_hypothesis_id),
+    'branch inspection must return the branch primary hypothesis',
+  );
 
   const firstAdvance = await service.advance({
     run_id: runId,
@@ -95,7 +105,6 @@ try {
   assert.equal(finished.audit.summary.high, 0);
   assert.ok(finished.supported_conclusions.some((item) => item.id === integrated.conclusion_id));
 
-  succeeded = true;
   console.log(JSON.stringify({
     status: 'passed',
     run_id: runId,
@@ -112,8 +121,13 @@ try {
   console.error('Start the local Neo4j database, then rerun `node scripts/neo4j-smoke.mjs`.');
   process.exitCode = 1;
 } finally {
-  if (succeeded && runId && process.env.GRAPH_REASONING_SMOKE_KEEP !== '1') {
-    await client.run('MATCH (n) WHERE n.runId = $runId DETACH DELETE n', { runId });
-    await client.run('MATCH (r:Run {id: $runId}) DETACH DELETE r', { runId });
+  if (runId && process.env.GRAPH_REASONING_SMOKE_KEEP !== '1') {
+    try {
+      await client.run('MATCH (n) WHERE n.runId = $runId DETACH DELETE n', { runId });
+      await client.run('MATCH (r:Run {id: $runId}) DETACH DELETE r', { runId });
+    } catch (cleanupError) {
+      console.error(`Neo4j smoke cleanup failed: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`);
+      process.exitCode = 1;
+    }
   }
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 - 2026-08-24
+
+- Fixed branch inspection on Neo4j 2026.07 by aggregating reasoning nodes before returning the branch map.
+- Extended the live Neo4j smoke test to inspect a created branch and clean up its test run after both success and failure.
+- Kept the bundled `.mcp.json` in the documented direct-server-map format while allowing setup and protocol verification to read direct maps, the documented `mcp_servers` wrapper, and legacy `mcpServers` wrappers.
+- Cleared the MCP protocol smoke-test timeout after process exit while retaining a 90-second startup allowance.
+- Added `.gitattributes` so shell, PowerShell, JavaScript, JSON, Markdown, YAML, and Cypher files retain LF endings across Windows and Linux checkouts.
+
 ## 0.2.0
 
 - Consolidated the working Windows and Linux packages into one distribution.

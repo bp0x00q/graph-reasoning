@@ -53,13 +53,25 @@ test('OS wrappers delegate to the same shared setup implementation', async () =>
   assert.match(linuxInstall, /^#!\/usr\/bin\/env bash/m);
 });
 
+
+
+test('bundled MCP configuration uses the documented direct server map', async () => {
+  const plugin = JSON.parse(await readFile(resolve(root, '.codex-plugin/plugin.json'), 'utf8'));
+  const mcp = JSON.parse(await readFile(resolve(root, '.mcp.json'), 'utf8'));
+
+  assert.equal(plugin.mcpServers, './.mcp.json');
+  assert.equal(typeof mcp['graph-reasoning'], 'object');
+  assert.equal(mcp['graph-reasoning'].command, 'node');
+  assert.equal(Object.hasOwn(mcp, 'mcpServers'), false);
+});
+
 test('package metadata is platform-neutral and does not require Docker', async () => {
   const plugin = JSON.parse(await readFile(resolve(root, '.codex-plugin/plugin.json'), 'utf8'));
   const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
   const readme = await readFile(resolve(root, 'README.md'), 'utf8');
 
-  assert.equal(plugin.version, '0.2.0');
-  assert.equal(pkg.version, '0.2.0');
+  assert.equal(plugin.version, '0.2.1');
+  assert.equal(pkg.version, '0.2.1');
   assert.doesNotMatch(plugin.description, /windows|linux/i);
   assert.doesNotMatch(plugin.interface.longDescription, /windows-local|linux-local/i);
   assert.doesNotMatch(pkg.description, /windows-local|linux-local/i);
@@ -67,6 +79,17 @@ test('package metadata is platform-neutral and does not require Docker', async (
   assert.match(readme, /Linux/i);
   assert.doesNotMatch(readme, /Docker.*required|required.*Docker/i);
   assert.equal(await exists(resolve(root, 'docker-compose.yml')), false);
+});
+
+
+
+test('repository-ready package pins script line endings for cross-platform checkouts', async () => {
+  const attributesPath = resolve(root, '.gitattributes');
+  assert.equal(await exists(attributesPath), true, '.gitattributes is missing');
+  const attributes = await readFile(attributesPath, 'utf8');
+  assert.match(attributes, /^\*\.sh\s+text\s+eol=lf$/m);
+  assert.match(attributes, /^\*\.ps1\s+text\s+eol=lf$/m);
+  assert.match(attributes, /^\*\.mjs\s+text\s+eol=lf$/m);
 });
 
 test('repository-ready package includes CI and publication guidance', async () => {

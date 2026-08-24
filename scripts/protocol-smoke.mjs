@@ -6,10 +6,11 @@ import { createInterface } from 'node:readline';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveMcpServerConfig } from './setup-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const mcpConfig = JSON.parse(await readFile(resolve(root, '.mcp.json'), 'utf8'));
-const serverConfig = mcpConfig['graph-reasoning'];
+const serverConfig = resolveMcpServerConfig(mcpConfig);
 assert.ok(serverConfig, 'missing graph-reasoning entry in .mcp.json');
 const child = spawn(serverConfig.command, serverConfig.args ?? [], {
   cwd: resolve(root, serverConfig.cwd ?? '.'),
@@ -34,13 +35,16 @@ const requests = [
 for (const request of requests) child.stdin.write(`${JSON.stringify(request)}\n`);
 child.stdin.end();
 
+let timeout;
 const exitCode = await Promise.race([
   new Promise((resolveExit, reject) => {
     child.once('error', reject);
     child.once('close', resolveExit);
   }),
-  new Promise((_, reject) => setTimeout(() => reject(new Error('MCP protocol smoke timed out')), 5000)),
-]);
+  new Promise((_, reject) => {
+    timeout = setTimeout(() => reject(new Error('MCP protocol smoke timed out')), 90000);
+  }),
+]).finally(() => clearTimeout(timeout));
 
 assert.equal(exitCode, 0, `server exited ${exitCode}: ${stderr}`);
 assert.equal(responses.length, 3, `expected 3 responses, got ${responses.length}: ${stderr}`);

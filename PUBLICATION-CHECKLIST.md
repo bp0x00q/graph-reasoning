@@ -10,6 +10,7 @@ Before publishing:
 - [ ] Add the repository URL and issue tracker once they exist.
 - [ ] Run `npm run check` on Windows and Linux.
 - [ ] Run the live `npm run test:integration` test against Neo4j on Windows and Linux.
+- [ ] Define the supported Neo4j version range and run the live integration test against the oldest and newest supported releases.
 - [ ] Run both operating-system installers from a clean extracted archive.
 - [ ] Confirm neither installer overwrites unrelated personal marketplace entries.
 - [ ] Review `AGENTS.md.snippet` and both bundled skills for public wording.

@@ -23,7 +23,7 @@ The MCP server and reasoning behavior are identical on Windows and Linux. Only t
 ## Requirements
 
 - Node.js 20 or newer in `PATH`
-- A local Neo4j 5 database with HTTP enabled on loopback
+- A local Neo4j database with HTTP enabled on loopback
 - A Codex host that supports local STDIO MCP servers and plugins
 - Windows 10/11 with PowerShell 5.1+, or a Linux system with Bash
 

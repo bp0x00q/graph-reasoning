@@ -106,6 +106,18 @@ function assertMarketplaceObject(value, path) {
   }
 }
 
+export function resolveMcpServerConfig(config, pluginName = PLUGIN_NAME) {
+  if (!config || typeof config !== 'object' || Array.isArray(config)) return null;
+
+  const candidates = [
+    config[pluginName],
+    config.mcp_servers?.[pluginName],
+    config.mcpServers?.[pluginName],
+  ];
+
+  return candidates.find((value) => value && typeof value === 'object' && !Array.isArray(value)) ?? null;
+}
+
 function marketplaceSourcePath(homeDir, targetRoot) {
   const rel = relative(resolve(homeDir), resolve(targetRoot));
   if (!rel || rel.startsWith(`..${sep}`) || rel === '..' || isAbsolute(rel)) {
@@ -169,7 +181,7 @@ export async function installGraphReasoning({
     throw new Error(`Unable to read bundled MCP configuration at ${mcpPath}: ${error.message}`);
   }
 
-  const serverConfig = mcpConfig?.[PLUGIN_NAME];
+  const serverConfig = resolveMcpServerConfig(mcpConfig);
   if (!serverConfig || typeof serverConfig !== 'object' || Array.isArray(serverConfig)) {
     throw new Error(`The bundled MCP configuration is missing the ${PLUGIN_NAME} server entry: ${mcpPath}`);
   }
@@ -217,4 +229,3 @@ export async function installGraphReasoning({
     neo4jDatabase: String(neo4jDatabase),
   };
 }
-
