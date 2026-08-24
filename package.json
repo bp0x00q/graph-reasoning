@@ -1,0 +1,21 @@
+{
+  "name": "graph-reasoning-codex-plugin",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Local graph-native branch-and-backtrack reasoning for Codex using Neo4j.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "test:protocol": "node --test tests/protocol.test.mjs",
+    "test:package": "node --test tests/cross-platform-package.test.mjs tests/setup-core.test.mjs",
+    "test:neo4j": "node --test tests/neo4j-http.test.mjs",
+    "test:integration": "node scripts/neo4j-smoke.mjs",
+    "smoke:protocol": "node scripts/protocol-smoke.mjs",
+    "check:syntax": "node --check server/index.mjs && node --check scripts/setup-core.mjs && node --check scripts/install.mjs && node --check scripts/configure-neo4j.mjs && node --check scripts/verify.mjs && node --check scripts/neo4j-smoke.mjs && node --check scripts/protocol-smoke.mjs",
+    "check": "npm run check:syntax && npm test && npm run smoke:protocol"
+  }
+}

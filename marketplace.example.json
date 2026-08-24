@@ -1,0 +1,20 @@
+{
+  "name": "local-graph-reasoning",
+  "interface": {
+    "displayName": "Local Graph Reasoning"
+  },
+  "plugins": [
+    {
+      "name": "graph-reasoning",
+      "source": {
+        "source": "local",
+        "path": "./.codex/plugins/graph-reasoning"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer Tools"
+    }
+  ]
+}
