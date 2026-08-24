@@ -228,7 +228,3 @@ npm run test:integration
 ```
 
 The included CI workflow runs the dependency-free unit, protocol, package-layout, syntax, Bash, and PowerShell parser checks on both Windows and Linux.
-
-## Publication status
-
-This archive is repository-ready but is not a Git repository. Before publishing it, complete `PUBLICATION-CHECKLIST.md`, especially the license, author, repository URL, and a live Neo4j test on both operating systems.
